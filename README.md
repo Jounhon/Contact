@@ -1,9 +1,10 @@
 # [Contact]
 
 ### Use [Monaca](https://monaca.io/) Platform
-Practice for using AngularJS , Ionic & XMPP to make a chatting app for school.
-The data in this project already lose.
-So U just only can see the screenshot.
+Practice for using AngularJS , Ionic & XMPP to make a chatting app for school.  
+And practice using e2e test.
+The data in this project already lose.  
+So U just only can see the screenshot.  
 
 ## Table of contents
 
