@@ -21,7 +21,7 @@ Several quick start options are available:
 
 
 ## Screenshot
-![list](http://i.imgur.com/f0kkc5U.jpg =135x330)
+<img src="http://i.imgur.com/f0kkc5U.jpg" alt="alt text" width="50%" height="50%">
 
 ## Copyright and license
 Code & Documentation copyright NTUT_ILAB.
