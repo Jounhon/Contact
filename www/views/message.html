@@ -1,0 +1,24 @@
+<ion-view title="訊息" cache-view="false">
+    <ion-content padding="true">
+        <ion-list class="list">
+            <ion-item class="item card" style="padding:15px; margin-top:-5px;" ng-repeat="item in messageList | toArray | orderBy:'-lastStamp'" ng-click="href(item.id)">
+                <div>
+                    <div style="position: relative;float:left;left:0px;">{{getName(item)}}</div>
+                    <div style="position: relative;float:right;right:0px;">
+                        <span style="font-size:10px;">{{item.lastStamp| date:"HH:mma"}}</span><br />
+                        <span ng-show="item.unreadCount!=0" class="badge badge-assertive" style="margin-top:10px;right:0px;">{{item.unreadCount}}</span>
+                    </div>
+                </div><br />
+                <div style="width:75%;margin-top:10px;">
+                    <p>{{item.lastMessage}}</p>
+                </div>
+            </ion-item>
+        </ion-list>
+        <!--
+        <div class="item">
+            <pre ng-bind="messageList | json"></pre>
+        </div>
+        -->
+    </ion-content>
+
+</ion-view>

@@ -1,193 +1,169 @@
-app.controller('organizationCtrl', function ($scope, $rootScope, $ionicLoading, $timeout, $filter, $state, DBInitManager,ContactTreeManager,memberDetailManager,ContactManager) {
+app.controller('organizationCtrl', function ($scope, $rootScope, $ionicLoading, $ionicScrollDelegate, $timeout, $filter, $state, ContactManager, MemberManager, ContactTreeManager, DepMembersManager, Api, XMPPClient) {
     //window.clearInterval($rootScope.refreshTimer);
 
-    $scope.organizations=ContactTreeManager.list();
-    $scope.root={
-        id:-1,
-        name:"北科資工"
-    }
-     $timeout(function () {
+    //$scope.organizations = ContactTreeManager.list();
+    $scope.organizations={};
+    var t = ContactTreeManager.initialize();
+    t.then(function (result) {
+        $scope.organizations = result;
+    });
+
+    $scope.myDeps={};
+    $timeout(function () {
+        $rootScope.$broadcast('ctrl:message:intervalstop',function(){});
+        $ionicLoading.show({
+          template: '<ion-spinner icon="bubbles"></ion-spinner><p>資料載入中,請稍後...</p>',
+          showDelay: 0,
+          noBackdrop:true,
+        });
         getNew();
     }, 3);
-    
-    var getNew=function(){
-        if(Object.keys($scope.organizations).length===0){
-            var data=DBInitManager.getData();
-            var count=1;
-            for(var key in data){
-                var treeData=TreeData(count,data[key].type,key,0);
-                ContactTreeManager.add(treeData);
-                if(data[key].type==="people"){
-                    var memData=MemData(count,data[key]);
-                    memberDetailManager.add(memData);
-                    continue;
-                }
-                var data2=data[key].sub;
-                var root=count;
-                for(var key2 in data2){
-                    count++;
-                    var treeData=TreeData(count,data2[key2].type,key2,root);
-                    ContactTreeManager.add(treeData);
-                    if(data2[key2].type==="people"){
-                        var memData=MemData(count,data2[key2]);
-                        memberDetailManager.add(memData);
-                        continue;
-                    }
-                    var data3=data2[key2].sub;
-                    var root2=count;
-                    for(var key3 in data3){
-                        count++;
-                        var treeData=TreeData(count,data3[key3].type,key3,root2);
-                        ContactTreeManager.add(treeData);
-                        if(data3[key3].type==="people"){
-                            var memData=MemData(count,data3[key3]);
-                            memberDetailManager.add(memData);
-                            continue;
-                        }
+
+    var getNew = function () {
+        if(Object.keys($scope.organizations).length>0) {
+            $ionicLoading.hide();
+            return;
+        }
+        Api.getGroupList(function (data) {
+            receiveData = data;
+            for (var key in receiveData) {
+                newData(receiveData[key]);
+                var secondFloor = receiveData[key].children;
+                for (var key2 in secondFloor) {
+                    newData(secondFloor[key2]);
+                    var thirdFloor = secondFloor[key2].children;
+                    for (var key3 in thirdFloor) {
+                        newData(thirdFloor[key3]);
                     }
                 }
             }
-        }
-        $scope.organizations=ContactTreeManager.list();
+            $scope.organizations = ContactTreeManager.list();
+            $ionicLoading.hide();
+            var deps=localStorage.deps.split(',');
+            for(var key in deps){
+                var item=ContactTreeManager.get(deps[key]);
+                item.chat=true;
+                ContactTreeManager.update(item);
+                item=ContactTreeManager.get(item.parentId);
+                item.chat=true;
+                ContactTreeManager.update(item);
+            }
+            $ionicLoading.hide();
+        });
     }
-    var TreeData=function(Id,Type,Name,RootId){
-        var temp={
-            id:Id,
-            type:Type,
-            name:Name,
-            marked:false,
-            open:false,
-            rootId:RootId
-        }
-        return temp;       
+
+    var newData = function (data) {
+        var haschild = true;
+        if (Object.keys(data.children).length === 0) haschild = false;
+        var item = {
+            id: data.id,
+            name: data.name,
+            parentId: data.parentId,
+            version: data.version,
+            path: data.path,
+            marked: false,
+            open: false,
+            chat:false,
+            hasChild: haschild,
+        };
+        ContactTreeManager.add(item);
     }
-    var MemData=function(Id,data){
-        var temp={
-            id:Id,
-            phone:data.phone,
-            tel:data.tel,
-            email:data.email,
-            marked:false,
-        }
-        return temp;       
+    $scope.toggleGroup = function (item) {
+        item.open = !item.open;
+        //$ionicScrollDelegate.resize();
     }
-    
-    $scope.space=function(sel,item){
-        var s='';
-        if(sel===0){
-            var levels=getLevel(item);
-            for(var i=0;i<=levels;i++){
-                for(var j=0;j<i;j++) s+='\xA0\xA0';
-            };
-            
-        }
-        else if(sel===1){
-            if(item.type==="people") s='\xA0';
-            else s='\xA0\xA0';
-        }
-        return s;   
-    }
-    var getLevel=function(item){
-        var count=0;
-        var rootId=item.rootId;
-        while(rootId!=0){
-            var root=ContactTreeManager.getRoot(rootId);
-            rootId=root.rootId;
-            count++;
-        }
-        return count;
-    }
-    $scope.isGroup=function(item){
-        return item.type==="group";
-    }
-    $scope.toggleGroup=function(item){
-        if(item.type==="group") item.open=!item.open;
-        else if(item.type==="people"){
-            item.marked=!item.marked;
-            change_down(item.id,item);
-            check_up(item.rootId);
+    $scope.showItem = function (item) {
+        if (item.parentId === null) return true;
+        else {
+            //  $ionicScrollDelegate.resize();
+            return checkUp(item.parentId);
         }
     }
-    $scope.checkTF=function(item){
-        return item.open===true;
-    }
-    $scope.showItem=function(item){
-        if(item.rootId===0) return true;
-        else{
-            return checkUp(item.rootId);            
+    $scope.toggleClick = function (item, $event) {
+        item.marked = !item.marked;
+        ContactTreeManager.update(item);
+        if (item.marked) {
+            var node = {
+                id: item.id,
+                parentId: item.parentId,
+                name: item.name,
+                type: 0,
+                open: false,
+                chat:item.chat,
+                hasChild: item.hasChild
+            }
+            ContactManager.add(node);
+            var group = ContactTreeManager.get(item.id);
+            if (!group.hasChild) AddMember(item.id, item.name, group.version);
+            else {
+                var subList = ContactTreeManager.listById(item.id);
+                for (var key in subList) {
+                    AddMember(subList[key].id, subList[key].name, subList[key].version);
+                }
+            }
         }
-    }
-    var checkUp=function(id){
-        if(id===0) return true;
-        var rootData=ContactTreeManager.getRoot(id);
-        var showhide=checkUp(rootData.rootId);
-        if(!showhide) return false;
-        else if(!rootData.open) return false;
-        else if(rootData.open) return true;
-        
-    }
-    
-    $scope.toggleClick = function(item,$event) {
-        change_down(item.id,item);
-        check_up(item.rootId);
+        else ContactManager.remove(item.id, item.parentId);
         $event.stopImmediatePropagation();
     };
-    var change_down=function(id,item){
-        ContactTreeManager.changeMark(item);
-        var list=ContactTreeManager.listById(id);
-        var AddRoot=false;
-        if(item.marked){
-            ContactManager.add(item);
-        }
-        else ContactManager.remove(item);
-        for(var key in list){
-            list[key].marked=item.marked;
-            ContactTreeManager.changeMark(list[key]);
-            if(list[key].marked){
-                ContactManager.add(list[key]);
-                AddRoot=true;
-            }else{
-                ContactManager.remove(list[key]);
-                ChangeOrNot=false;
-            }
-            change_down(list[key].id, item);
-        }
-        rootId=item.rootId;
-        while(rootId!=0){
-            var rootData=ContactTreeManager.getRoot(rootId);
-            if(AddRoot||item.marked){
-                ContactManager.add(rootData);
-            }
-            else{
-                var sameLevelList=ContactTreeManager.listById(rootId);
-                var del=true;
-                for(var key in sameLevelList){
-                    if(sameLevelList[key].marked) del=false;
+
+    var checkUp = function (id) {
+        if (id === null) return true;
+        var rootData = ContactTreeManager.get(id);
+        var showhide = checkUp(rootData.parentId);
+        if (!showhide) return false;
+        else if (!rootData.open) return false;
+        else if (rootData.open) return true;
+    }
+
+    var AddMember = function (DepId, depName, version) {
+        var diff = false;
+        Api.getDepVersion(DepId, version, function (data) {
+            var receiveData = data;
+            if (receiveData) diff = true;
+        });
+        Api.getMembers(DepId, localStorage.id, function (data) {
+            var receiveData = data;
+            for (var key in receiveData) {
+                var item = {
+                    id: receiveData[key].userInfo.id,
+                    name: receiveData[key].userInfo.name,
+                    email: receiveData[key].userInfo.email,
+                    phoneNumber: receiveData[key].userInfo.phoneNumber,
+                    userName: receiveData[key].userInfo.userName,
+                    tel: receiveData[key].tel,
+                    job: receiveData[key].job,
+                    install: receiveData[key].userInfo.install,
+                    parentId: receiveData[key].departmentId,
+                    marked: false
                 }
-                if(del) ContactManager.remove(rootData);
+                XMPPClient.enroll(item, [depName]);
+                MemberManager.add(item);
+                if (diff) MemberManager.update(item);
+                item = {};
+                item = {
+                    id: receiveData[key].userInfo.id,
+                    job: receiveData[key].job,
+                    tel: receiveData[key].tel,
+                    parentId: receiveData[key].departmentId
+                }
+                DepMembersManager.add(item);
+                if (diff) DepMembersManager.update(item);
             }
-            rootId=rootData.rootId;
-        }
-        return ;
+        });
     }
-    var check_up=function(id){
-        if(id===0) return;
-        var sameLevelList=ContactTreeManager.listById(id);
-        var changeRoot=true;
-        for(var key in sameLevelList){
-            if(sameLevelList[key].marked===false) changeRoot=false;
-        }
-        var root=ContactTreeManager.getRoot(id);
-        root.marked=changeRoot;
-        ContactTreeManager.changeMark(root);
-        check_up(root.rootId);
+
+    $scope.href = function (item) {
+        var group = ContactTreeManager.get(item.id);
+        AddMember(item.id, item.name, group.version);
+        $state.go("tab.peoplelist", { departmentId: item.id });
     }
-    
+    $scope.groupChat = function (item,$event) {
+        var group = ContactTreeManager.get(item.id);
+        AddMember(item.id, item.name, group.version);
+        $event.stopImmediatePropagation();
+        $state.go('tab.messageGroup', { depId: item.id });
+    }
     $timeout(function () {
         $scope.$apply();
     }, 2000);
-
-    //$rootScope.refreshTimer = window.setInterval(getNewIndustries, 3000);
-    
-
 });

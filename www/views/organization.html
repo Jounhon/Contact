@@ -1,40 +1,51 @@
-<ion-view title="" cache-view="false" >
-    <ion-nav-buttons side="left">
-        <a class="button" ng-click="back(root.id)"><i class="ion-arrow-left-c" ng-show="showHide(root.id)"></i>  {{root.name}}</a>
-    </ion-nav-buttons>
+<ion-view title="組織列表" cache-view="false" >
+    
+    <ion-content has-header="true" has-subheader="true" has-tabs="true"  >
 
-    <ion-content has-header="true" has-subheader="true" has-tabs="true" ng-init="DBinit()" >
         <ion-list>
-            <div ng-repeat="items in organizations | toArray track by $index" >
-              <ion-item ng-class="{active:items.open,'item-group':isGroup(items),'item-people':!isGroup(items)}"
-                        ng-click="toggleGroup(items)"
-                        ng-show="showItem(items)"
-                        class="item-toggle-option">
-                    {{space(1,items)+space(0,items)}}
-                  <i class="icon" ng-show="isGroup(items)" ng-class="checkTF(items) ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
-                  <i class="icon" ng-hide="isGroup(items)" ng-class="'ion-android-person'"></i>
-                {{items.name}}
-                    <label class="toggle toggle-balanced">
-                    <input type="checkbox" ng-model="items.marked" ng-checked="items.marked" ng-click="toggleClick(items,$event)" >
-                    <div class="track">
-                        <div class="handle"></div>
-                    </div>
-                </label>
-              </ion-item>
+            <div ng-repeat="unit in organizations | toArray|filter:{parentId:null}:true  track by $index">
+                <ion-item ng-class="{active:unit.open}"
+                          ng-click="toggleGroup(unit)"
+                          ng-show="showItem(unit)"
+                          class="item item-icon-right item-group">
+                    <i ng-class="unit.open ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                    {{unit.name}}
+                </ion-item>
+                <div ng-repeat="affair in organizations | toArray |filter:{parentId:unit.id}:true   track by $index ">
+                    <ion-item ng-class="{active:affair.open}"
+                              ng-click="toggleGroup(affair)"
+                              ng-show="showItem(affair)"
+                              class="item item-button-right item-group">
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <i ng-class="affair.open ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                        {{affair.name}}
+                        <div class="buttons">
+                            <button class="button button-clear button-dark" ng-if="affair.chat" ng-click="groupChat(affair,$event)">
+                                <i class="icon ion-chatbubbles"></i>
+                            </button>
+                            <button class="button button-clear" ng-click="toggleClick(affair,$event)">
+                                <i class="icon ion-ios-star" ng-class="affair.marked?'energized':'dark'"></i>
+                            </button>
+                        </div>
+                    </ion-item>
+                    <ion-item ng-repeat="dep in organizations | toArray |filter:{parentId:affair.id}:true   track by $index"
+                              ng-click="href(dep)"
+                              ng-show="showItem(dep)"
+                              class="item item-button-right item-group">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <i class="ion-arrow-right-b"></i>
+                        {{dep.name}}
+                        <div class="buttons">
+                            <button class="button button-clear button-dark" ng-if="dep.chat" ng-click="groupChat(dep,$event)">
+                                <i class="icon ion-chatbubbles"></i>
+                            </button>
+                            <button class="button button-clear" ng-click="toggleClick(dep,$event)">
+                                <i class="icon ion-ios-star" ng-class="dep.marked?'energized':'dark'"></i>
+                            </button>
+                        </div>
+                    </ion-item>
+                </div>
             </div>
-            <!--
-            <ion-item class="item-toggle-option " ng-repeat="items in organizations | toArray | orderBy:'name' track by $index" ng-click="href(items)"
-                ng-class-odd="'odd'" ng-class-even="'even'">
-                <i class="ion-chevron-right" ng-show="items.type==='group'"></i>
-                {{ items.name }}
-                <label class="toggle toggle-balanced">
-                    <input type="checkbox" ng-model="items.marked" ng-checked="items.marked" ng-click="toggleClick(items,$event)" >
-                    <div class="track">
-                        <div class="handle"></div>
-                    </div>
-                </label>
-            </ion-item>
-            -->
         </ion-list>
         
         <!--
@@ -44,3 +55,8 @@
         -->
     </ion-content>
 </ion-view>
+
+
+
+
+

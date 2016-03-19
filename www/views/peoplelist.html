@@ -1,0 +1,22 @@
+<ion-view title="{{depName}}" cache-view="false" >
+    
+    <ion-content has-header="true" has-subheader="true" has-tabs="true" >
+        <ion-list>
+            <ion-item class="item" ng-hide="hasData">
+                <h2>Empty !</h2>
+            </ion-item>
+            <div ng-repeat="people in peoplelist | toArray" ng-show="hasData">
+                <ion-item class="item item-icon-left item-icon-right" ng-class="(people.id!=localStorageID)?'item-people':'item-me'" ng-click="(people.id!=localStorageID)?chat(people.id):''">
+                    <i class="icon ion-ios-person"></i>
+                    {{people.name}}
+                    <i class="icon ion-android-star" ng-class="people.marked?'energized':'dark'" ng-show="people.id!=localStorageID" ng-click="toggleClick(people,$event)"></i>
+                </ion-item>
+            </div>
+        <!--
+        </ion-list>
+        <div class="item">
+          <pre ng-bind="peoplelist | json"></pre> 
+        </div>
+        -->
+    </ion-content>
+</ion-view>

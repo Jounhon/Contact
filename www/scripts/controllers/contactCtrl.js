@@ -1,67 +1,73 @@
-app.controller('contactCtrl', function ($scope, $rootScope, $ionicLoading, $timeout, $filter, $state,ContactManager) {
+app.controller('contactCtrl', function ($scope, $rootScope, $ionicScrollDelegate, $ionicLoading, $timeout, $filter, $state, ContactManager, MemberManager, DepMembersManager, ContactTreeManager, MessageInfoManager) {
     //window.clearInterval($rootScope.refreshTimer);
     
-    $scope.contactList=ContactManager.list();
-    $scope.root={
-        id:-1,
-        name:"北科資工"
+    $scope.contactList = ContactManager.list();
+    $scope.localStorageId=localStorage.id;
+    $scope.hasSignleList = ContactManager.hasSingle();
+    $scope.showSignleList = false;
+    $scope.isEmpty=function(){
+        var list=ContactManager.list();
+        if(Object.keys(list).length===0) return false;
+        return true;
     }
-    $scope.space=function(sel,item){
-        var s='';
-        if(sel===0){
-            var levels=getLevel(item);
-            for(var i=0;i<=levels;i++){
-                for(var j=0;j<i;j++) s+='\xA0\xA0';
-            };
-            
+
+    $scope.toggleSignle = function () {
+        $scope.showSignleList = !$scope.showSignleList;
+        $ionicScrollDelegate.resize();       
+    }
+
+    $scope.getDepNameJob = function (item) {
+        var levels = 2;
+        var root = ContactTreeManager.get(item.parentId);
+        var deps = {},depNameJob='';
+        while (root.parentId != null) {
+            deps[levels--] = root.name;
+            root = ContactTreeManager.get(root.parentId);
         }
-        else if(sel===1){
-            if(item.type==="people") s='\xA0';
-            else s='\xA0\xA0';
+        for (var key in deps) {
+            depNameJob += deps[key] + "- ";
         }
-        return s;   
+        depNameJob += "\xA0\xA0\xA0\xA0" + item.name + " ";
+        var job = DepMembersManager.get(item.id, item.parentId);
+        depNameJob += job.job;
+        return depNameJob;
     }
-    var getLevel=function(item){
-        var count=0;
-        var rootId=item.rootId;
-        while(rootId!=0){
-            var root=ContactManager.getRoot(rootId);
-            rootId=root.rootId;
-            count++;
-        }
-        return count;
+
+    $scope.getSubGroup = function (parentId) {
+        return ContactTreeManager.listById(parentId);
     }
-    $scope.isGroup=function(item){
-        return item.type==="group";
+    $scope.getPeople = function (parentId) {
+        return MemberManager.listByDep(parentId);
     }
-    $scope.toggleGroup=function(item){
-        item.open=!item.open;
-        if(item.type==="people"){
-            $state.go("tab.peopleDetail", { peoId:item.id });
-        }
+    $scope.getRootName = function (parentId) {
+        var root = ContactTreeManager.get(parentId);
+        return root.name;
     }
-    $scope.checkTF=function(item){
-        return item.open===true;
+    $scope.getJob = function (id, parentId) {
+        var job = DepMembersManager.get(id, parentId);
+        return job.job;
     }
-    $scope.showItem=function(item){
-        if(item.rootId===0) return true;
-        else{
-            return checkUp(item.rootId);            
-        }
+
+    $scope.toggleGroup = function (item) {
+        item.open = !item.open;
+        $ionicScrollDelegate.resize();
     }
-    var checkUp=function(id){
-        if(id===0) return true;
-        var rootData=ContactManager.getRoot(id);
-        var showhide=checkUp(rootData.rootId);
-        if(!showhide) return false;
-        else if(!rootData.open) return false;
-        else if(rootData.open) return true;
-        
+    
+    $scope.href = function (memberid, depid) {
+        $state.go('tab.messageSingle', { depId: depid, memberId: memberid });
     }
+    $scope.groupChat = function (item) {
+        $state.go('tab.messageGroup', { depId: item.id });
+    }
+    $rootScope.$on('ctrl:contact:refresh', function (event) {
+        $scope.contactList = ContactManager.list();
+        $scope.hasSignleList = ContactManager.hasSingle();
+        $state.reload();
+    });
+
     $timeout(function () {
         $scope.$apply();
     }, 2000);
-
     //$rootScope.refreshTimer = window.setInterval(getNewIndustries, 3000);
 
 });

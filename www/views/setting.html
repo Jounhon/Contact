@@ -1,26 +1,66 @@
-<ion-view title="設定">
-    <ion-content padding="true" class="setting">
-        <!--
-        <h4 ng-show="me.name == '' || me.name == null" class="setting-note">
-            資料讀取中，請稍後........
-        </h4>
+<ion-view title="設定" cache-view="false">
+    <ion-content padding="true" class="setting" ng-init="init()">
+        <div class="list card">
 
-        <div class="list">
-            <ion-item class="item-avatar item">
+            <ion-item class="item-avatar item item-icon-left">
                 <img src="images/icon-person-128.png">
-                <h2 style="font-size:25px;margin-top: 6px;">{{me.name}}</h2>
+                <h2 style="font-size:25px;margin-top: 6px;">{{people.name}}</h2>
             </ion-item>
-            <ion-item class="item">
-                手機：{{me.phone}}
+
+            <ion-item class="item-icon-right">
+                <div ng-repeat="item in depsName | toArray track by $index">
+                    單位：
+                    <span ng-repeat="dep in item.depName | toArray track by $index">
+                        {{dep}}
+                        <i class="ion-android-arrow-dropright" ng-show="showIcon(item,$index+1)"></i>
+                    </span> {{item.job}}<br />
+                    電話：02-2771-2171,{{item.tel}}<br />
+                </div>
+            </ion-item>
+
+
+            <ion-item class="item-icon-right" ng-show="people.email != '' && people.email != null">
+                Email：{{people.email}}
+            </ion-item>
+
+            <ion-item class="item item-button-right" ng-show="people.phoneNumber!=''&&people.phoneNumber!=null">
+                手機：{{people.phoneNumber}}
+                <button class="button-clear" ng-click="change()" >
+                    <img src="images/lock.png" style="width:16px;height:16px;" />
+                </button>
+            </ion-item>
+            <ion-item ng-hide="lockDiv">
+                <ion-slide-box on-slide-changed="slideHasChanged($index)" show-pager="{{showpaper}}">
+                    <ion-slide ng-repeat="selBox in option ">
+                        <div>
+                            <ion-radio value="" name="{{selBox.name}}" ng-model="selBox.nodeValue" ng-change="sync('');RadioUpdate('');">僅限本人</ion-radio>
+                            <ion-radio ng-repeat="radio in selBox.radiobox"
+                                       value="{{radio.value}}"
+                                       ng-model="selBox.nodeValue"
+                                       ng-change="check();RadioUpdate(radio.value);"
+                                       name="{{selBox.name}}">
+                                僅限{{radio.select}}
+                            </ion-radio>
+                            <ion-radio ng-value="selBox.allNode" name="{{selBox.name}}" ng-model="selBox.nodeValue" ng-change="sync(selBox.allNode);RadioUpdate(selBox.allNode);">對全校教職人員公開</ion-radio>
+
+                            <ion-checkbox ng-hide="selBox.nodeValue===''|| selBox.allNode===selBox.nodeValue"
+                                          ng-repeat="check in selBox.checkbox"
+                                          ng-model="check.checked"
+                                          ng-checked="check.checked"
+                                          value="chceck.value"
+                                          ng-change="checkUpdate(check)">
+                                對{{check.text}}公開
+                            </ion-checkbox>
+
+                        </div>
+                    </ion-slide>
+                </ion-slide-box>
             </ion-item>
         </div>
-        -->
-        
         <!--
         <div class="item">
-          <pre ng-bind="contactList | json"></pre> 
+            <pre ng-bind="option | json"></pre>
         </div>
-        
         -->
     </ion-content>
 </ion-view>

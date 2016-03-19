@@ -1,0 +1,32 @@
+<ion-view title="{{Name}}" cache-view="false">
+    <ion-nav-buttons side="right">
+        <a class="button" href="#/tab/message"><i class="icon ion-ios-list"></i></a>
+    </ion-nav-buttons>
+    <ion-content padding="true">
+        <div class="chat">
+            <div ng-repeat="messages in getMessages() | toArray |filter:{type:0}| orderBy : 'stamp | dateSorting' ">
+                <span ng-show="type==1&&messages.state==3" style="font-size:10px;">{{getName(messages.occupant)}}</span>
+                <div ng-class="messages.state==3?'message-them': 'message-me'">
+                    <div ng-class=" messages.state == 3 ?  'font-right' : 'font-left'" ng-show="messages.state < 3">
+                        <h6 ng-show="messages.state == 0">已發送</h6>
+                        <h6 ng-show="messages.state == 1">已接收</h6>
+                        <h6 ng-show="messages.state == 2">已讀</h6>
+                        <span>{{ messages.stamp | dateFormat}}</span>
+                    </div>
+                    <blockquote>
+                        <span style="white-space:pre-wrap;word-wrap:break-word;">{{messages.message}}</span>
+                    </blockquote>
+                    <span style="font-size:12px;" am-time-ago="message.date" ng-show="messages.state==3">{{messages.stamp  | dateFormat}}</span>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+    <ion-footer-bar align-title="left">
+        <div class="bar bar-footer bar-stable">
+            <label class="item-input text" style="width:85%;float:left;">
+                <textarea style="width:100%;" placeholder="輸入訊息" ng-model="msg.message" rows="1" Wrap="Hard" id="messageInput" ></textarea>
+            </label>
+            <button class="button button-small" style="float:right;" ng-click="snedMessage()">傳送</button>
+        </div>
+    </ion-footer-bar>
+</ion-view>

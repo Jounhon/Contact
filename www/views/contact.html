@@ -1,4 +1,7 @@
 <ion-view title="聯繫" cache-view="false">
+    <ion-nav-buttons side="right">
+        <a class="button" href="#/tab/buildRoom" ng-show="isEmpty()"><i class="icon ion-android-people"></i></a>
+    </ion-nav-buttons>
     <!--
     <ion-header-bar class="bar-subheader" style="padding: 0;background-color:#f8f8f8 !improtant">
         <div class="bar item-input-inset">
@@ -11,20 +14,81 @@
     -->
     <ion-content has-header="true" has-subheader="true" has-tabs="true">
         <ion-list>
-            <div ng-repeat="group in contactList|toArray track by $index" >
-              <ion-item ng-class="{active:group.open,'item-group':isGroup(group),'item-people':!isGroup(group)}"
-                        ng-click="toggleGroup(group)"
-                        ng-show="showItem(group)">
-                    {{space(0,group)}}
-                  <i class="icon" ng-show="isGroup(group)" ng-class="checkTF(group) ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
-                  <i class="icon" ng-hide="isGroup(group)" ng-class="'ion-android-person'"></i>
-                {{space(1,group)+group.name}}
-              </ion-item>
+            <!--常用聯絡人-->
+            <div ng-show="hasSignleList">
+                <ion-item ng-click="toggleSignle()"
+                          class="item item-group">
+                    <i ng-class="showSignleList ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                    常用聯絡人
+                </ion-item>
+                <ion-item ng-repeat="person in contactList | toArray | filter:{type:1}:true  track by $index"
+                          ng-click="href(person.id,person.parentId)"
+                          ng-show="showSignleList"
+                          class="item item-people">
+                    &nbsp;&nbsp;&nbsp;{{getDepNameJob(person)}}
+                </ion-item>
             </div>
+            <!--一級常用-->
+            <div ng-repeat="group in contactList | toArray | filter:{type:0,hasChild:true}:true  track by $index">
+                <ion-item ng-class="{active:group.open}"
+                          ng-click="toggleGroup(group)"
+                          class="item item-button-right item-group">
+                    <i ng-class="group.open ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                    {{group.name}}
+                    <div class="buttons">
+                        <button class="button button-clear button-dark" ng-if="group.chat" ng-click="groupChat(group)">
+                            <i class="icon ion-chatbubbles"></i>
+                        </button>
+                    </div>
+                </ion-item>
+                <div ng-repeat="subGroup in getSubGroup(group.id)|toArray track by $index">
+                    <ion-item ng-class="{active:subGroup.open}"
+                              ng-click="toggleGroup(subGroup)"
+                              ng-show="group.open"
+                              class="item item-button-right item-group">&nbsp;&nbsp;&nbsp;
+                        <i ng-class="subGroup.open ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                        {{subGroup.name}}
+                        <div class="buttons">
+                            <button class="button button-clear button-dark" ng-if="subGroup.chat" ng-click="groupChat(subGroup)">
+                                <i class="icon ion-chatbubbles"></i>
+                            </button>
+                        </div>
+                    </ion-item>
+                    <ion-item ng-repeat="people in getPeople(subGroup.id) |toArray track by $index"
+                              ng-click="href(people.id,subGroup.id)"
+                              ng-show="people.id!=localStorageId&&group.open&&subGroup.open"
+                              class="item item-people"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {{people.name+"  "+getJob(people.id,subGroup.id)}}
+                    </ion-item>
+                </div>
+            </div>
+            <!--二級常用-->
+            <div ng-repeat="group in contactList | toArray | filter:{type:0,hasChild:false}:true  track by $index">
+                <ion-item ng-class="{active:group.open}"
+                          ng-click="toggleGroup(group)"
+                          class="item item-button-right item-group">
+                    <i ng-class="group.open ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                    {{getRootName(group.parentId)+"-"+group.name}}
+                    <div class="buttons">
+                        <button class="button button-clear button-dark" ng-if="group.chat" ng-click="groupChat(group)">
+                            <i class="icon ion-chatbubbles"></i>
+                        </button>
+                    </div>
+                </ion-item>
+                <ion-item ng-repeat="people in getPeople(group.id)|toArray track by $index"
+                          ng-click="href(people.id,group.id)"
+                          ng-show="people.id!=localStorageId&&group.open"
+                          class="item item-people">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    {{people.name+"  "+getJob(people.id,group.id)}}
+                </ion-item>
+            </div>
+               
         </ion-list>
         <!--
         <div class="item">
           <pre ng-bind="contactList | json"></pre> 
+          
         </div>
         -->
     </ion-content>

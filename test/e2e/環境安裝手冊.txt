@@ -1,0 +1,13 @@
+﻿安裝Node.js
+
+使用Node.js command prompt安裝以下套件
+npm install -g protractor
+webdriver-manager update
+webdriver-manager start
+
+讓Visual Studio以瀏覽器運行index.html
+確認測試文件的網址與運行的網址相同
+
+再開另一個cmd起來
+到tests/e2e目錄啟動測試
+protractor conf.js

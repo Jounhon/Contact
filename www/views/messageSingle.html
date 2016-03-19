@@ -1,0 +1,150 @@
+<ion-view title="訊息" cache-view="false">
+    <ion-nav-buttons side="right">
+        <a class="button" href="#/tab/message"><i class="icon ion-ios-list"></i></a>
+    </ion-nav-buttons>
+    <ion-content has-header="true" has-subheader="true" has-tabs="true">
+        <ion-list>
+            <div>
+                <ion-item>
+                    <a class="item item-icon-left item-icon-right" ng-click="toggleMember()">
+                        <i class="icon ion-ios-person"></i>
+                        {{people.name}}
+                        <i ng-class="checkTF() ? 'icon ion-ios-arrow-down' : 'icon ion-ios-arrow-up'"></i>
+                    </a>
+                    <div class="list" ng-show="open">
+                        <a class="item item-icon-left">
+                            <i class="icon ion-briefcase"></i>
+                            單位：
+                            <span ng-repeat="name in depName | toArray track by $index">
+                                {{name}}
+                                <i class="ion-android-arrow-dropright" ng-show="showIcon($index+1)"></i>
+                            </span>
+                        </a>
+                        <a class="item item-icon-left">
+                            <i class="icon ion-person"></i>
+                            職稱：{{people.job}}
+                        </a>
+
+                        <a class="item item-icon-left">
+                            <i class="icon ion-email"></i>
+                            郵件：{{people.email}}
+                        </a>
+
+                        <a class="item item-icon-left" ng-show="people.tel.length!=''">
+                            <i class="icon ion-printer"></i>
+                            電話：{{"02-27712171,"+people.tel}}
+                        </a>
+
+                        <a class="item item-icon-left" ng-show="people.phoneNumber.length!=''&&people.phoneNumber.length!=null">
+                            <i class="icon ion-ios-telephone"></i>
+                            手機：{{people.phoneNumber}}
+                        </a>
+                    </div>
+                </ion-item>
+
+                <div class="row " style="background-color:white;">
+                    <div class="col" ng-show="people.phoneNumber.length!=''&&people.phoneNumber.length!=null">
+                        <button class="button button-small button-dark" ng-class="showDiv('mobile')?'':'button-outline'" ng-click="href('tel:' + people.phoneNumber);select('mobile')">
+                            <div><i class="icon ion-social-whatsapp"></i></div>
+                            <div>手機</div>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="button button-small button-dark" ng-class="showDiv('tel')?'':'button-outline'" ng-click="href('tel:' + '0227712171' + ',' + people.tel);select('tel')">
+                            <div><i class="icon ion-ios-telephone"></i></div>
+                            <div>分機</div>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="button button-small button-dark" ng-class="showDiv('mail')?'':'button-outline'" ng-click="href('mailto:{{people.email}}')">
+                            <div><i class="icon ion-ios-email"></i></div>
+                            <div>郵件</div>
+                        </button>
+                    </div>
+                    <div class="col" ng-show="people.phoneNumber.length!=''&&people.phoneNumber.length!=null">
+                        <button class="button button-small button-dark" ng-class="showDiv('sms')?'':'button-outline'" ng-click="href('sms:{{people.phoneNumber}}')" ng-show="people.phoneNumber.length!=''&&people.phoneNumber.length!=null">
+                            <div><i class="icon ion-chatbox"></i></div>
+                            <div>簡訊</div>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="button button-small button-dark" ng-class="showDiv('chat')?'':'button-outline'" ng-click="select('chat')">
+                            <div><i class="icon ion-android-chat"></i></div>
+                            <div>聊天</div>
+                        </button>
+                    </div>
+                    <div class="col" ng-hide="people.install">
+                        <button class="button button-small button-dark" ng-class="showDiv('add')?'':'button-outline'" ng-click="select('add');sendInvitation()">
+                            <div><i class="icon ion-android-person-add"></i></div>
+                            <div>邀請</div>
+                        </button>
+                    </div>
+                    <div class="col col-center">
+                        <button class="button button-small button-dark" ng-class="showDiv('upload')?'':'button-outline'" ng-click="select('upload');addcontact()">
+                            <div><i class="icon ion-ios-upload"></i></div>
+                            <div>匯出</div>
+                        </button>
+                    </div>
+                </div>
+                <ion-item class="card">
+                    <!-- email view -->
+                    <div class="list" ng-show="showDiv('mail')">
+                        <label class="item item-input">
+                            <input type="text" placeholder="Subject" ng-model="email.subject" required>
+                        </label>
+                        <label class="item item-input">
+                            <textarea placeholder="Message" ng-model="email.message" style="height:150px;"></textarea>
+                        </label>
+                        <button style="margin-top:2px" class="button button-small" ng-click="send()">
+                            Submit
+                        </button>
+                    </div>
+
+                    <!-- chat view -->
+                    
+                        <ion-scroll direction="y" class="chat chat-small" ng-show="showDiv('chat')">
+                            <div ng-repeat="messages in getMessages() | toArray | orderBy : 'stamp | dateSorting'  track by $index">
+                                <div ng-class="messages.state==3?'message-them': 'message-me'">
+                                    <div ng-class=" messages.state == 3 ?  'font-right' : 'font-left'" ng-show="messages.state < 3">
+                                        <h6 ng-show="messages.state == 0">已發送</h6>
+                                        <h6 ng-show="messages.state == 1">已接收</h6>
+                                        <h6 ng-show="messages.state == 2">已讀</h6>
+                                        <span>{{ messages.stamp | dateFormat}}</span>
+                                    </div>
+                                    <blockquote>
+                                        <span style="white-space:pre-wrap;word-wrap:break-word;">{{messages.message}}</span>
+                                    </blockquote>
+
+                                    <div ng-class=" messages.state == 3 ?  'font-left' : 'font-right'" ng-show="messages.state == 3">
+                                        <span>{{messages.stamp | dateFormat}}</span>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </ion-scroll>
+                    
+                    <!-- sms view -->
+                    <div class="list" ng-show="showDiv('sms')">
+                        <label class="item item-input" >
+                            <input type="text" placeholder="Subject" ng-model="sms.subject">
+                        </label>
+                        <label class="item item-input">
+                            <textarea placeholder="Message" ng-model="sms.message"></textarea>
+                        </label>
+                        <button style="margin-top:2px" class="button button-small" ng-click="sendSms()">
+                            Submit
+                        </button>
+                    </div>
+                </ion-item>
+            </div>
+        </ion-list>
+    </ion-content>
+    <ion-footer-bar align-title="left" ng-show="showDiv('chat')">
+        <div class="bar bar-footer bar-stable">
+            <label class="item-input text" style="width:85%;float:left;">
+                <textarea style="width:100%;" placeholder="輸入訊息" ng-model="msg.message" rows="1" Wrap="Hard" id="messageInput" ></textarea>
+            </label>
+            <button class="button button-small" style="float:right;" ng-click="snedMessage()">傳送</button>
+        </div>
+    </ion-footer-bar>
+</ion-view>
