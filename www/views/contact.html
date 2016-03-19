@@ -1,0 +1,31 @@
+<ion-view title="聯繫" cache-view="false">
+    <!--
+    <ion-header-bar class="bar-subheader" style="padding: 0;background-color:#f8f8f8 !improtant">
+        <div class="bar item-input-inset">
+            <label class="item-input-wrapper">
+                <i class="icon ion-ios-search placeholder-icon"></i>
+                <input type="search" placeholder="Search" ng-model="searchText">
+            </label>
+        </div>
+    </ion-header-bar>
+    -->
+    <ion-content has-header="true" has-subheader="true" has-tabs="true">
+        <ion-list>
+            <div ng-repeat="group in contactList|toArray track by $index" >
+              <ion-item ng-class="{active:group.open,'item-group':isGroup(group),'item-people':!isGroup(group)}"
+                        ng-click="toggleGroup(group)"
+                        ng-show="showItem(group)">
+                    {{space(0,group)}}
+                  <i class="icon" ng-show="isGroup(group)" ng-class="checkTF(group) ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                  <i class="icon" ng-hide="isGroup(group)" ng-class="'ion-android-person'"></i>
+                {{space(1,group)+group.name}}
+              </ion-item>
+            </div>
+        </ion-list>
+        <!--
+        <div class="item">
+          <pre ng-bind="contactList | json"></pre> 
+        </div>
+        -->
+    </ion-content>
+</ion-view>

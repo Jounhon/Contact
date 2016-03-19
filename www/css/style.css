@@ -1,0 +1,58 @@
+*{
+    font: 16px 蘋果儷中黑, 微軟正黑體, simhei, 'ms gothic';
+}
+
+/*設定頁面上方的小字*/
+.setting-note {
+    color: #aaa;
+    font-size: 14px;
+    text-align: center;
+}
+
+.hasOptionHeight{
+    margin-bottom: 45px !important;
+}
+.hasSenderHeight{
+    margin-bottom: 30px !important;    
+}
+.hasOptionSenderHeight{
+    margin-bottom: 75px !important;    
+}
+
+
+.item-toggle-option .toggle {
+    position: absolute;
+    top:8px;
+    right: 16px;
+    z-index: 3;
+}
+
+/*顏色背景*/
+ion-item{
+    border:1px #fff solid !important;
+}
+ion-item.item-group{
+    background-color: rgba(146,180,244,0.5) !important;
+}
+ion-item.item-group.active{
+    background-color: rgba(38,38,38,0.5) !important;
+}
+ion-item.item-people{
+    background-color: rgba(188,255,119,0.5) !important;
+}
+
+ion-view, .friendGB {
+    background-image: url("../images/white-linen.png");
+}
+
+.odd {
+  background-color: rgba(194, 194, 194, 0.11);
+  border: none;
+}
+.even {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: none;
+}
+.content {
+    padding: 5em;
+}

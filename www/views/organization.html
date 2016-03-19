@@ -1,0 +1,46 @@
+<ion-view title="" cache-view="false" >
+    <ion-nav-buttons side="left">
+        <a class="button" ng-click="back(root.id)"><i class="ion-arrow-left-c" ng-show="showHide(root.id)"></i>  {{root.name}}</a>
+    </ion-nav-buttons>
+
+    <ion-content has-header="true" has-subheader="true" has-tabs="true" ng-init="DBinit()" >
+        <ion-list>
+            <div ng-repeat="items in organizations | toArray track by $index" >
+              <ion-item ng-class="{active:items.open,'item-group':isGroup(items),'item-people':!isGroup(items)}"
+                        ng-click="toggleGroup(items)"
+                        ng-show="showItem(items)"
+                        class="item-toggle-option">
+                    {{space(1,items)+space(0,items)}}
+                  <i class="icon" ng-show="isGroup(items)" ng-class="checkTF(items) ? 'ion-arrow-down-b' : 'ion-arrow-right-b'"></i>
+                  <i class="icon" ng-hide="isGroup(items)" ng-class="'ion-android-person'"></i>
+                {{items.name}}
+                    <label class="toggle toggle-balanced">
+                    <input type="checkbox" ng-model="items.marked" ng-checked="items.marked" ng-click="toggleClick(items,$event)" >
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+              </ion-item>
+            </div>
+            <!--
+            <ion-item class="item-toggle-option " ng-repeat="items in organizations | toArray | orderBy:'name' track by $index" ng-click="href(items)"
+                ng-class-odd="'odd'" ng-class-even="'even'">
+                <i class="ion-chevron-right" ng-show="items.type==='group'"></i>
+                {{ items.name }}
+                <label class="toggle toggle-balanced">
+                    <input type="checkbox" ng-model="items.marked" ng-checked="items.marked" ng-click="toggleClick(items,$event)" >
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </ion-item>
+            -->
+        </ion-list>
+        
+        <!--
+        <div class="item">
+          <pre ng-bind="organizations | json"></pre> 
+        </div>
+        -->
+    </ion-content>
+</ion-view>
