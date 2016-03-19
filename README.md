@@ -21,7 +21,7 @@ Several quick start options are available:
 
 
 ## Screenshot
-(http://i.imgur.com/f0kkc5U.jpg)
+![list](http://i.imgur.com/f0kkc5U.jpg)
 
 ## Copyright and license
 Code & Documentation copyright NTUT_ILAB.
